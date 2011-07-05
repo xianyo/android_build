@@ -123,4 +123,21 @@ GRANDFATHERED_ALL_PREBUILT := \
 	wl1271.bin \
 	zoneinfo.dat \
 	zoneinfo.idx \
-	zoneinfo.version
+	zoneinfo.version \
+	alsa.conf \
+	dsnoop.conf \
+	modem.conf \
+	dpl.conf \
+	default.conf \
+	surround51.conf \
+	surround41.conf \
+	surround50.conf \
+	dmix.conf \
+	center_lfe.conf \
+	surround40.conf \
+	side.conf \
+	iec958.conf \
+	rear.conf \
+	surround71.conf \
+	front.conf \
+	aliases.conf

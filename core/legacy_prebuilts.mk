@@ -140,4 +140,17 @@ GRANDFATHERED_ALL_PREBUILT := \
 	rear.conf \
 	surround71.conf \
 	front.conf \
-	aliases.conf
+	aliases.conf \
+	ar6000.ko				\
+	wlan_tool				\
+	wmiconfig				\
+	athwlan.bin				\
+	data.patch.bin				\
+	otp.bin					\
+	athtcmd_ram.bin				\
+	bdata.SD31.bin				\
+	athwlan.bin.z77				\
+	data.patch.bin				\
+	otp.bin.z77				\
+	bdata.SD31.bin				\
+	athtcmd_ram.bin				\

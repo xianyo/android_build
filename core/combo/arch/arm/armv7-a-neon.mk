@@ -16,8 +16,13 @@ ARCH_ARM_HAVE_TLS_REGISTER      := true
 # Note: Hard coding the 'tune' value here is probably not ideal,
 # and a better solution should be found in the future.
 #
-arch_variant_cflags := \
-    -march=armv7-a \
+ifeq ($(TARGET_CPU_SMP),true)
+arch_variant_cflags := -mcpu=cortex-a9
+else
+arch_variant_cflags := -march=armv7-a
+endif
+
+arch_variant_cflags += \
     -mfloat-abi=softfp \
     -mfpu=neon
 

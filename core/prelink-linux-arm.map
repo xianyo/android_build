@@ -180,8 +180,20 @@ libhtc_ril.so           0xA2C00000 # [~1M]
 liblvmxipc.so           0xA2B00000 # [~1M] for vendor/nxp
 libreference-cdma-sms.so 0xA2A00000 # [<64K] for hardware/ril
 
-# ubi libraries
-libubi.so		      0xA2900000 # [???]
+# freescale i.mx related libs.
+libgsl-fsl.so		0xA2900000 # [<64K]
+libsensorservice.so	0xA2800000 # [~1M]
+libc2d_z430.so		0xA2700000 # [~1M]
+libasound.so		0xA600000 # [~1M]
+sensors.imx5x.so	0xA2500000 # [<64K]
+lights.freescale.so	0xA2400000 # [<64K]
+gralloc.imx5x.so	0xA2300000 # [<64K]
+gps.default.so		0xA2200000 # [<64K]
+libGLESv2_imx51.so	0xA1E00000 # [~3M]
+libGLESv1_CM_imx51.so	0xA1D00000 # [???]
+libEGL_imx51.so		0xA1C00000 # [???]
+libubi.so		0xA1B00000 # [???]
+libc2d_z160.so		0xA1A00000 # [???]
 
 # libraries for specific apps or temporary libraries
 libcam_ipl.so           0x9F000000 # [???]

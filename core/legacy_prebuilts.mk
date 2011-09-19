@@ -156,4 +156,5 @@ GRANDFATHERED_ALL_PREBUILT := \
 	athtcmd_ram.bin				\
 	hostapd_cli 				\
 	hostapd_wps				\
-	hostapd
+	hostapd                                 \
+	wlan_tool_6102

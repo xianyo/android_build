@@ -29,7 +29,7 @@ static mapentry *maplist = 0;
 #define PRELINK_MAX 0x7FFFFFFF
 #else
 #define PRELINK_MIN 0x90000000
-#define PRELINK_MAX 0xBFFFFFFF
+#define PRELINK_MAX 0xAFFFFFFF
 #endif
 
 void pm_init(const char *file)
@@ -96,8 +96,8 @@ void pm_init(const char *file)
                pm_report_library_size_in_memory().
             */
             FAILIF((n < PRELINK_MIN) || (n > PRELINK_MAX),
-                   "%s:%d base 0x%08x out of range.\n",
-                   file, line, n);
+                   "%s:%d base 0x%x out of range. min: 0x%x max: 0x%x\n",
+                   file, line, n, PRELINK_MIN, PRELINK_MAX);
 
             me = malloc(sizeof(mapentry));
             FAILIF(me == NULL, "Out of memory parsing %s\n", file);

@@ -184,7 +184,7 @@ libreference-cdma-sms.so 0xA2A00000 # [<64K] for hardware/ril
 libgsl-fsl.so		0xA2900000 # [<64K]
 libsensorservice.so	0xA2800000 # [~1M]
 libc2d_z430.so		0xA2700000 # [~1M]
-libasound.so		0xA600000 # [~1M]
+libasound.so		0xA2600000 # [~1M]
 sensors.imx5x.so	0xA2500000 # [<64K]
 lights.freescale.so	0xA2400000 # [<64K]
 gralloc.imx5x.so	0xA2300000 # [<64K]

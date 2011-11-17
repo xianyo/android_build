@@ -154,3 +154,6 @@ GRANDFATHERED_ALL_PREBUILT := \
 	otp.bin.z77				\
 	bdata.SD31.bin				\
 	athtcmd_ram.bin				\
+	hostapd_cli 				\
+	hostapd_wps				\
+	hostapd

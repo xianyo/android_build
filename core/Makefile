@@ -719,7 +719,7 @@ endif
 .PHONY: kernelimage
 ifeq ($(TARGET_BUILD_KERNEL),true)
 
-KERNEL_ENV := ARCH=arm CROSS_COMPILE=../$(TARGET_TOOLS_PREFIX)
+KERNEL_ENV := ARCH=arm CROSS_COMPILE=../prebuilt/linux-x86/toolchain/arm-eabi-4.3.1/bin/arm-eabi-
 HOST_PROCESSOR := $(shell cat /proc/cpuinfo | grep processor | wc -l)
 kernelimage: $(ACP)
 	echo $(HOST_PROCESSOR)

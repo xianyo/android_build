@@ -145,15 +145,18 @@ GRANDFATHERED_ALL_PREBUILT := \
 	wlan_tool				\
 	wmiconfig				\
 	athwlan.bin				\
-	data.patch.bin				\
+	data.patch.hw2_0.bin			\
 	otp.bin					\
-	athtcmd_ram.bin				\
 	bdata.SD31.bin				\
 	athwlan.bin.z77				\
 	data.patch.bin				\
 	otp.bin.z77				\
-	bdata.SD31.bin				\
 	athtcmd_ram.bin				\
+	athwlan_router.bin                      \
+	athwlan_mobile.bin                      \
+	athwlan_tablet.bin                      \
+	data.patch.hw3_0.bin                    \
+	device.bin                              \
 	hostapd_cli 				\
 	hostapd_wps				\
 	hostapd                                 \

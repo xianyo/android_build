@@ -753,11 +753,11 @@ endif
 
 # Build files and then package it into the rom formats
 .PHONY: droidcore
-droidcore: kernelimage \
+droidcore: kernel \
 	files \
 	systemimage \
 	$(INSTALLED_BOOTIMAGE_TARGET) \
-	recoveryimage \
+	$(INSTALLED_RECOVERYIMAGE_TARGET) \
 	$(INSTALLED_USERDATAIMAGE_TARGET) \
 	$(INSTALLED_FILES_FILE) \
 	ubifs_raw

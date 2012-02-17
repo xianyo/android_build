@@ -627,14 +627,14 @@ endif
 # Recovery image
 
 # If neither TARGET_NO_KERNEL nor TARGET_NO_RECOVERY are true
-ifeq (,$(filter true, $(TARGET_NO_RECOVERY) $(BUILD_TINY_ANDROID)))
+ifeq (,$(filter true, $(TARGET_NO_KERNEL) $(TARGET_NO_RECOVERY) $(BUILD_TINY_ANDROID)))
 
 INSTALLED_RECOVERYIMAGE_TARGET := $(PRODUCT_OUT)/recovery.img
 
 recovery_initrc := $(call include-path-for, recovery)/etc/init.rc
-#recovery_kernel := $(INSTALLED_KERNEL_TARGET) # same as a non-recovery system
-#recovery_ramdisk := $(PRODUCT_OUT)/ramdisk-recovery.img
-#recovery_build_prop := $(INSTALLED_BUILD_PROP_TARGET)
+recovery_kernel := $(INSTALLED_KERNEL_TARGET) # same as a non-recovery system
+recovery_ramdisk := $(PRODUCT_OUT)/ramdisk-recovery.img
+recovery_build_prop := $(INSTALLED_BUILD_PROP_TARGET)
 recovery_binary := $(call intermediates-dir-for,EXECUTABLES,recovery)/recovery
 recovery_resources_common := $(call include-path-for, recovery)/res
 recovery_resources_private := $(strip $(wildcard $(TARGET_DEVICE_DIR)/recovery/res))
@@ -650,22 +650,22 @@ ifeq ($(recovery_fstab),)
   $(info No recovery.fstab for TARGET_DEVICE $(TARGET_DEVICE))
 endif
 
-#INTERNAL_RECOVERYIMAGE_ARGS := \
-#	$(addprefix --second ,$(INSTALLED_2NDBOOTLOADER_TARGET)) \
-#	--kernel $(recovery_kernel) \
-#	--ramdisk $(recovery_ramdisk)
+INTERNAL_RECOVERYIMAGE_ARGS := \
+	$(addprefix --second ,$(INSTALLED_2NDBOOTLOADER_TARGET)) \
+	--kernel $(recovery_kernel) \
+	--ramdisk $(recovery_ramdisk)
 
 # Assumes this has already been stripped
-#ifdef BOARD_KERNEL_CMDLINE
-#  INTERNAL_RECOVERYIMAGE_ARGS += --cmdline "$(BOARD_KERNEL_CMDLINE)"
-#endif
-#ifdef BOARD_KERNEL_BASE
-#  INTERNAL_RECOVERYIMAGE_ARGS += --base $(BOARD_KERNEL_BASE)
-#endif
-#BOARD_KERNEL_PAGESIZE := $(strip $(BOARD_KERNEL_PAGESIZE))
-#ifdef BOARD_KERNEL_PAGESIZE
-#  INTERNAL_RECOVERYIMAGE_ARGS += --pagesize $(BOARD_KERNEL_PAGESIZE)
-#endif
+ifdef BOARD_KERNEL_CMDLINE
+  INTERNAL_RECOVERYIMAGE_ARGS += --cmdline "$(BOARD_KERNEL_CMDLINE)"
+endif
+ifdef BOARD_KERNEL_BASE
+  INTERNAL_RECOVERYIMAGE_ARGS += --base $(BOARD_KERNEL_BASE)
+endif
+BOARD_KERNEL_PAGESIZE := $(strip $(BOARD_KERNEL_PAGESIZE))
+ifdef BOARD_KERNEL_PAGESIZE
+  INTERNAL_RECOVERYIMAGE_ARGS += --pagesize $(BOARD_KERNEL_PAGESIZE)
+endif
 
 # Keys authorized to sign OTA packages this build will accept.  The
 # build always uses dev-keys for this; release packaging tools will
@@ -686,8 +686,11 @@ $(RECOVERY_INSTALL_OTA_KEYS): $(OTA_PUBLIC_KEYS) $(DUMPKEY_JAR) $(extra_keys)
 	java -jar $(DUMPKEY_JAR) $(PRIVATE_OTA_PUBLIC_KEYS) $(extra_keys) > $@
 
 $(INSTALLED_RECOVERYIMAGE_TARGET): $(MKBOOTFS) $(MKBOOTIMG) $(MINIGZIP) \
+		$(INSTALLED_RAMDISK_TARGET) \
+		$(INSTALLED_BOOTIMAGE_TARGET) \
 		$(recovery_binary) \
 		$(recovery_initrc) $(recovery_kernel) \
+		$(INSTALLED_2NDBOOTLOADER_TARGET) \
 		$(recovery_build_prop) $(recovery_resource_deps) \
 		$(recovery_fstab) \
 		$(RECOVERY_INSTALL_OTA_KEYS)
@@ -711,23 +714,28 @@ $(INSTALLED_RECOVERYIMAGE_TARGET): $(MKBOOTFS) $(MKBOOTIMG) $(MINIGZIP) \
 	cp $(RECOVERY_INSTALL_OTA_KEYS) $(TARGET_RECOVERY_ROOT_OUT)/res/keys
 	cat $(INSTALLED_DEFAULT_PROP_TARGET) $(recovery_build_prop) \
 	        > $(TARGET_RECOVERY_ROOT_OUT)/default.prop
+	$(MKBOOTFS) $(TARGET_RECOVERY_ROOT_OUT) | $(MINIGZIP) > $(recovery_ramdisk)
+	$(MKBOOTIMG) $(INTERNAL_RECOVERYIMAGE_ARGS) --output $@
+	@echo ----- Made recovery image -------- $@
+	$(hide) $(call assert-max-image-size,$@,$(BOARD_RECOVERYIMAGE_PARTITION_SIZE),raw)
 
 else
 INSTALLED_RECOVERYIMAGE_TARGET :=
 endif
 
-.PHONY: kernelimage
-ifeq ($(TARGET_BUILD_KERNEL),true)
-
+.PHONY: kernel
+ifneq ($(strip $(TARGET_NO_KERNEL)),true)
 KERNEL_ENV := ARCH=arm CROSS_COMPILE=../prebuilt/linux-x86/toolchain/arm-eabi-4.4.3/bin/arm-eabi-
 HOST_PROCESSOR := $(shell cat /proc/cpuinfo | grep processor | wc -l)
-kernelimage: $(ACP)
+kernel: $(ACP)
 	echo $(HOST_PROCESSOR)
 	$(MAKE) -C kernel_imx $(TARGET_KERNEL_DEFCONF) $(KERNEL_ENV)
 	$(MAKE) -C kernel_imx -j$(HOST_PROCESSOR) uImage $(KERNEL_ENV)
+	$(MAKE) -C kernel_imx -j$(HOST_PROCESSOR) zImage $(KERNEL_ENV)
 	$(ACP) kernel_imx/arch/arm/boot/uImage $(PRODUCT_OUT)/uImage
+	$(ACP) kernel_imx/arch/arm/boot/zImage $(PRODUCT_OUT)/kernel
 else
-kernelimage:
+kernel:
 endif
 
 .PHONY: recoveryimage
@@ -818,12 +826,7 @@ ifeq ($(INTERNAL_USERIMAGES_USE_EXT),true)
 # $(1): output file
 define build-systemimage-target
     @echo "Target system fs image: $(1)"
-    $(call build-userimage-ext-target, $(TARGET_OUT),$(1),system,$(INTERNAL_USERIMAGES_EXT_VARIANT),$(BOARD_SYSTEMIMAGE_PARTITION_SIZE))
-endef
-
-define build-recoveryimage-target
-     @echo "Target recovery fs image: $(1)"
-     $(call build-userimage-ext-target, $(TARGET_RECOVERY_ROOT_OUT),$(1),recovery,$(INTERNAL_USERIMAGES_EXT_VARIANT), $(BOARD_RECOVERY_PARTITION_SIZE))
+    $(call build-userimage-ext-target,$(TARGET_OUT),$(1),system,$(INTERNAL_USERIMAGES_EXT_VARIANT),$(BOARD_SYSTEMIMAGE_PARTITION_SIZE))
 endef
 
 else # INTERNAL_USERIMAGES_USE_EXT != true
@@ -863,17 +866,17 @@ SYSTEMIMAGE_SOURCE_DIR := $(TARGET_OUT)
 # as the source (since they are very similar).  Generate the patch so
 # we can see how big it's going to be, and include that in the system
 # image size check calculation.
-#ifneq ($(INSTALLED_RECOVERYIMAGE_TARGET),)
-#intermediates := $(call intermediates-dir-for,PACKAGING,recovery_patch)
-#RECOVERY_FROM_BOOT_PATCH := $(intermediates)/recovery_from_boot.p
-#$(RECOVERY_FROM_BOOT_PATCH): $(INSTALLED_RECOVERYIMAGE_TARGET) \
-#                             $(INSTALLED_BOOTIMAGE_TARGET) \
-#			     $(HOST_OUT_EXECUTABLES)/imgdiff \
-#	                     $(HOST_OUT_EXECUTABLES)/bsdiff
-#	@echo "Construct recovery from boot"
-#	mkdir -p $(dir $@)
-#	PATH=$(HOST_OUT_EXECUTABLES):$$PATH $(HOST_OUT_EXECUTABLES)/imgdiff $(INSTALLED_BOOTIMAGE_TARGET) $(INSTALLED_RECOVERYIMAGE_TARGET) $@
-#endif
+ifneq ($(INSTALLED_RECOVERYIMAGE_TARGET),)
+intermediates := $(call intermediates-dir-for,PACKAGING,recovery_patch)
+RECOVERY_FROM_BOOT_PATCH := $(intermediates)/recovery_from_boot.p
+$(RECOVERY_FROM_BOOT_PATCH): $(INSTALLED_RECOVERYIMAGE_TARGET) \
+                             $(INSTALLED_BOOTIMAGE_TARGET) \
+			     $(HOST_OUT_EXECUTABLES)/imgdiff \
+	                     $(HOST_OUT_EXECUTABLES)/bsdiff
+	@echo "Construct recovery from boot"
+	mkdir -p $(dir $@)
+	PATH=$(HOST_OUT_EXECUTABLES):$$PATH $(HOST_OUT_EXECUTABLES)/imgdiff $(INSTALLED_BOOTIMAGE_TARGET) $(INSTALLED_RECOVERYIMAGE_TARGET) $@
+endif
 
 
 $(INSTALLED_SYSTEMIMAGE): $(BUILT_SYSTEMIMAGE) $(RECOVERY_FROM_BOOT_PATCH) | $(ACP)

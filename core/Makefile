@@ -694,6 +694,7 @@ $(INSTALLED_RECOVERYIMAGE_TARGET): $(MKBOOTFS) $(MKBOOTIMG) $(MINIGZIP) \
 		$(recovery_build_prop) $(recovery_resource_deps) \
 		$(recovery_fstab) \
 		$(RECOVERY_INSTALL_OTA_KEYS)
+		$(private_recoveryimage_helper)
 	@echo ----- Making recovery image ------
 	rm -rf $(TARGET_RECOVERY_OUT)
 	mkdir -p $(TARGET_RECOVERY_OUT)
@@ -714,6 +715,7 @@ $(INSTALLED_RECOVERYIMAGE_TARGET): $(MKBOOTFS) $(MKBOOTIMG) $(MINIGZIP) \
 	cp $(RECOVERY_INSTALL_OTA_KEYS) $(TARGET_RECOVERY_ROOT_OUT)/res/keys
 	cat $(INSTALLED_DEFAULT_PROP_TARGET) $(recovery_build_prop) \
 	        > $(TARGET_RECOVERY_ROOT_OUT)/default.prop
+	$(call copy_private_recovery_helper)
 	$(MKBOOTFS) $(TARGET_RECOVERY_ROOT_OUT) | $(MINIGZIP) > $(recovery_ramdisk)
 	$(MKBOOTIMG) $(INTERNAL_RECOVERYIMAGE_ARGS) --output $@
 	@echo ----- Made recovery image -------- $@
@@ -738,7 +740,7 @@ else
 kernel:
 endif
 
-.PHONY: recoveryimage
+.PHONY: private_recoveryimage_helper
 ifneq ($(TARGET_NO_RECOVERY),true)
 
 BIN_HELPER := linker sh
@@ -759,16 +761,16 @@ endif
 BIN_HELPER := $(addprefix $(TARGET_OUT)/bin/, $(BIN_HELPER))
 LIB_HELPER := $(addprefix $(TARGET_OUT)/lib/, $(LIB_HELPER))
 
-recoveryimage: $(INSTALLED_RECOVERYIMAGE_TARGET) $(BIN_HELPER) $(LIB_HELPER)
+private_recoveryimage_help :=
+
+private_recoveryimage_helper : $(BIN_HELPER) $(LIB_HELPER)
+
+define copy_private_recovery_helper
 	mkdir -p $(TARGET_RECOVERY_ROOT_OUT)/system/bin/
 	mkdir -p $(TARGET_RECOVERY_ROOT_OUT)/system/lib/
 	cp -f $(BIN_HELPER) $(TARGET_RECOVERY_ROOT_OUT)/system/bin/
-	cp -f $(TARGET_ROOT_OUT)/init $(TARGET_RECOVERY_ROOT_OUT)/
-	cp -f $(TARGET_ROOT_OUT)/sbin/ueventd $(TARGET_RECOVERY_ROOT_OUT)/sbin/
 	cp -f $(LIB_HELPER) $(TARGET_RECOVERY_ROOT_OUT)/system/lib/
-	$(call build-recoveryimage-target,$(INSTALLED_RECOVERYIMAGE_TARGET))
-else
-recoveryimage:
+endef
 endif
 
 ifneq ($(BOARD_NAND_PAGE_SIZE),)

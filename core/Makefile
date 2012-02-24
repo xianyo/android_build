@@ -693,8 +693,8 @@ $(INSTALLED_RECOVERYIMAGE_TARGET): $(MKBOOTFS) $(MKBOOTIMG) $(MINIGZIP) \
 		$(INSTALLED_2NDBOOTLOADER_TARGET) \
 		$(recovery_build_prop) $(recovery_resource_deps) \
 		$(recovery_fstab) \
-		$(RECOVERY_INSTALL_OTA_KEYS)
-		$(private_recoveryimage_helper)
+		$(RECOVERY_INSTALL_OTA_KEYS) \
+		private_recoveryimage_helper
 	@echo ----- Making recovery image ------
 	rm -rf $(TARGET_RECOVERY_OUT)
 	mkdir -p $(TARGET_RECOVERY_OUT)
@@ -725,19 +725,28 @@ else
 INSTALLED_RECOVERYIMAGE_TARGET :=
 endif
 
-.PHONY: kernel
+.PHONY: kernelimage
 ifneq ($(strip $(TARGET_NO_KERNEL)),true)
-KERNEL_ENV := ARCH=arm CROSS_COMPILE=../prebuilt/linux-x86/toolchain/arm-eabi-4.4.3/bin/arm-eabi-
+KERNEL_CROSS_TOOLCHAIN := $(ARM_EABI_TOOLCHAIN)/arm-eabi-
+KERNEL_ENV := ARCH=arm CROSS_COMPILE=$(KERNEL_CROSS_TOOLCHAIN)
 HOST_PROCESSOR := $(shell cat /proc/cpuinfo | grep processor | wc -l)
-kernel: $(ACP)
-	echo $(HOST_PROCESSOR)
-	$(MAKE) -C kernel_imx $(TARGET_KERNEL_DEFCONF) $(KERNEL_ENV)
+INSTALLED_KERNEL_TARGET := $(PRODUCT_OUT)/kernel
+TARGET_PREBUILT_KERNEL := $(PRODUCT_OUT)/kernel
+KERNEL_CONFIGURE := kernel_imx/.config
+
+.PHONY: $(TARGET_PREBUILT_KERNEL)
+kernelimage: $(TARGET_PREBUILT_KERNEL)
+
+$(TARGET_PREBUILT_KERNEL): $(KERNEL_CONFIGURE)
 	$(MAKE) -C kernel_imx -j$(HOST_PROCESSOR) uImage $(KERNEL_ENV)
-	$(MAKE) -C kernel_imx -j$(HOST_PROCESSOR) zImage $(KERNEL_ENV)
-	$(ACP) kernel_imx/arch/arm/boot/uImage $(PRODUCT_OUT)/uImage
-	$(ACP) kernel_imx/arch/arm/boot/zImage $(PRODUCT_OUT)/kernel
+	install -D kernel_imx/arch/arm/boot/uImage $(PRODUCT_OUT)/uImage
+	install -D kernel_imx/arch/arm/boot/zImage $(PRODUCT_OUT)/kernel
+
+$(KERNEL_CONFIGURE): kernel_imx/arch/arm/configs/$(TARGET_KERNEL_DEFCONF)
+	$(MAKE) -C kernel_imx $(TARGET_KERNEL_DEFCONF) $(KERNEL_ENV)
+
 else
-kernel:
+kernelimage:
 endif
 
 .PHONY: private_recoveryimage_helper
@@ -763,7 +772,7 @@ LIB_HELPER := $(addprefix $(TARGET_OUT)/lib/, $(LIB_HELPER))
 
 private_recoveryimage_help :=
 
-private_recoveryimage_helper : $(BIN_HELPER) $(LIB_HELPER)
+private_recoveryimage_helper: $(BIN_HELPER) $(LIB_HELPER)
 
 define copy_private_recovery_helper
 	mkdir -p $(TARGET_RECOVERY_ROOT_OUT)/system/bin/

@@ -727,7 +727,7 @@ endif
 
 .PHONY: kernelimage
 ifneq ($(strip $(TARGET_NO_KERNEL)),true)
-KERNEL_CROSS_TOOLCHAIN := $(ARM_EABI_TOOLCHAIN)/arm-eabi-
+KERNEL_CROSS_TOOLCHAIN := ../prebuilt/linux-x86/toolchain/arm-eabi-4.4.3/bin/arm-eabi-
 KERNEL_ENV := ARCH=arm CROSS_COMPILE=$(KERNEL_CROSS_TOOLCHAIN)
 HOST_PROCESSOR := $(shell cat /proc/cpuinfo | grep processor | wc -l)
 INSTALLED_KERNEL_TARGET := $(PRODUCT_OUT)/kernel

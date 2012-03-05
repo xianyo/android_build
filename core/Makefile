@@ -725,6 +725,33 @@ else
 INSTALLED_RECOVERYIMAGE_TARGET :=
 endif
 
+.PHONY: bootloader
+ifneq ($(strip $(TARGET_BOOTLOADER_CONFIG)),)
+BOOTLOADER_CROSS_TOOLCHAIN := `pwd`/prebuilt/linux-x86/toolchain/arm-eabi-4.4.3/bin/arm-eabi-
+BOOTLOADER_ENV := ARCH=arm CROSS_COMPILE=$(BOOTLOADER_CROSS_TOOLCHAIN)
+HOST_PROCESSOR := $(shell cat /proc/cpuinfo | grep processor | wc -l)
+TARGET_BOOTLOADER_IMAGE := $(PRODUCT_OUT)/u-boot.bin
+
+BOOTLOADER_PATH := bootable/bootloader/uboot-imx/
+BOOTLOADER_CONFIG_FILE := $(BOOTLOADER_PATH)/include/config.h
+
+bootloader: $(TARGET_BOOTLOADER_IMAGE)
+
+$(BOOTLOADER_CONFIG_FILE):
+	$(MAKE) -C bootable/bootloader/uboot-imx/ distclean
+	$(MAKE) -C bootable/bootloader/uboot-imx/ $(TARGET_BOOTLOADER_CONFIG) $(BOOTLOADER_ENV)
+
+
+$(TARGET_BOOTLOADER_IMAGE): $(BOOTLOADER_CONFIG_FILE)
+	$(MAKE) -C bootable/bootloader/uboot-imx/ distclean
+	$(MAKE) -C bootable/bootloader/uboot-imx/ $(TARGET_BOOTLOADER_CONFIG) $(BOOTLOADER_ENV)
+	$(MAKE) -C bootable/bootloader/uboot-imx/ -j$(HOST_PROCESSOR) $(BOOTLOADER_ENV)
+	install -D bootable/bootloader/uboot-imx/u-boot.bin $@
+else
+bootloader:
+endif
+
+
 .PHONY: kernelimage
 ifneq ($(strip $(TARGET_NO_KERNEL)),true)
 KERNEL_CROSS_TOOLCHAIN := ../prebuilt/linux-x86/toolchain/arm-eabi-4.4.3/bin/arm-eabi-

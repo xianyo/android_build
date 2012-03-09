@@ -745,7 +745,7 @@ $(BOOTLOADER_CONFIG_FILE):
 $(TARGET_BOOTLOADER_IMAGE): $(BOOTLOADER_CONFIG_FILE)
 	$(MAKE) -C bootable/bootloader/uboot-imx/ distclean
 	$(MAKE) -C bootable/bootloader/uboot-imx/ $(TARGET_BOOTLOADER_CONFIG) $(BOOTLOADER_ENV)
-	$(MAKE) -C bootable/bootloader/uboot-imx/ -j$(HOST_PROCESSOR) $(BOOTLOADER_ENV)
+	$(MAKE) -C bootable/bootloader/uboot-imx/ $(BOOTLOADER_ENV)
 	install -D bootable/bootloader/uboot-imx/u-boot.bin $@
 else
 bootloader:

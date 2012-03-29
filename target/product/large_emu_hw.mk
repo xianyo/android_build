@@ -22,7 +22,6 @@ PRODUCT_POLICY := android.policy_mid
 PRODUCT_PACKAGES := \
     CarHome \
     DeskClock \
-    AlarmProvider \
     Bluetooth \
     Calculator \
     Calendar \
@@ -38,13 +37,7 @@ PRODUCT_PACKAGES := \
     Provision \
     QuickSearchBox \
     Settings \
-    Sync \
-    Updater \
-    CalendarProvider \
-    SyncProvider \
-    bluetooth-health \
-    hostapd \
-    wpa_supplicant.conf
+    CalendarProvider
 
 
 $(call inherit-product, $(SRC_TARGET_DIR)/product/core.mk)

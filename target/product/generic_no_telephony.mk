@@ -21,7 +21,6 @@ PRODUCT_POLICY := android.policy_phone
 
 PRODUCT_PACKAGES := \
     DeskClock \
-    AlarmProvider \
     Bluetooth \
     Calculator \
     Calendar \
@@ -38,14 +37,8 @@ PRODUCT_PACKAGES := \
     Phone \
     QuickSearchBox \
     Settings \
-    Sync \
     SystemUI \
-    Updater \
-    CalendarProvider \
-    SyncProvider \
-    bluetooth-health \
-    hostapd \
-    wpa_supplicant.conf
+    CalendarProvider
 
 PRODUCT_PACKAGES += \
     icu.dat

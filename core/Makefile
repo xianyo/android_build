@@ -764,7 +764,7 @@ KERNEL_OUT := $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ
 KERNEL_HEADERS_INSTALL := $(KERNEL_OUT)/usr
 
 .PHONY: $(TARGET_PREBUILT_KERNEL)
-kernelimage: $(TARGET_PREBUILT_KERNEL)
+kernelimage: $(TARGET_PREBUILT_KERNEL) $(PRODUCT_OUT)/lib/modules
 
 $(KERNEL_CONFIGURE): kernel_imx/arch/arm/configs/$(TARGET_KERNEL_DEFCONF)
 	$(MAKE) -C kernel_imx $(TARGET_KERNEL_DEFCONF) $(KERNEL_ENV)
@@ -774,9 +774,12 @@ $(KERNEL_HEADERS_INSTALL): $(KERNEL_CONFIGURE)
 	$(MAKE) -C kernel_imx -j$(HOST_PROCESSOR) O=../$(KERNEL_OUT) $(KERNEL_ENV) headers_install
 
 $(TARGET_PREBUILT_KERNEL): $(KERNEL_CONFIGURE)
-	$(MAKE) -C kernel_imx -j$(HOST_PROCESSOR) uImage $(KERNEL_ENV)
+	$(MAKE) -C kernel_imx -j$(HOST_PROCESSOR) uImage modules $(KERNEL_ENV)
 	install -D kernel_imx/arch/arm/boot/uImage $(PRODUCT_OUT)/uImage
 	install -D kernel_imx/arch/arm/boot/zImage $(PRODUCT_OUT)/kernel
+
+$(PRODUCT_OUT)/lib/modules: $(TARGET_PREBUILT_KERNEL)
+	$(MAKE) -C kernel_imx -j$(HOST_PROCESSOR) $(KERNEL_ENV) INSTALL_MOD_PATH=../$(PRODUCT_OUT) modules_install
 
 else
 kernelimage:

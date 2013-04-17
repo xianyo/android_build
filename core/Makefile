@@ -323,6 +323,9 @@ $(INSTALLED_RAMDISK_TARGET): $(MKBOOTFS) $(INTERNAL_RAMDISK_FILES) | $(MINIGZIP)
 	$(call pretty,"Target ram disk: $@")
 	$(hide) $(MKBOOTFS) $(TARGET_ROOT_OUT) | $(MINIGZIP) > $@
 
+$(PRODUCT_OUT)/boot/initrd.u-boot: $(PRODUCT_OUT)/ramdisk.img
+	mkdir -p $(PRODUCT_OUT)/boot
+	mkimage -A arm -O linux -T ramdisk -n "Initial Ram Disk" -d $< $@
 
 ifneq ($(strip $(TARGET_NO_KERNEL)),true)
 

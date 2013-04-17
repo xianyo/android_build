@@ -694,8 +694,11 @@ HOST_PROCESSOR := $(shell cat /proc/cpuinfo | grep processor | wc -l)
 kernelimage: $(ACP)
 	echo $(HOST_PROCESSOR)
 	$(MAKE) -C kernel_imx $(TARGET_KERNEL_DEFCONF) $(KERNEL_ENV)
-	$(MAKE) -C kernel_imx -j$(HOST_PROCESSOR) uImage $(KERNEL_ENV)
-	$(ACP) kernel_imx/arch/arm/boot/uImage $(PRODUCT_OUT)/uImage
+	$(MAKE) -C kernel_imx -j$(HOST_PROCESSOR) uImage modules $(KERNEL_ENV)
+	mkdir -p $(PRODUCT_OUT)/boot/lib/modules/
+	$(ACP) kernel_imx/arch/arm/boot/uImage $(PRODUCT_OUT)/boot/uImage
+	$(MAKE) -C kernel_imx $(KERNEL_ENV) INSTALL_MOD_PATH=$(PRODUCT_OUT)/ modules_install
+	find kernel_imx -type f -name \*.ko -exec cp -fv {} $(PRODUCT_OUT)/boot/lib/modules/ \;
 else
 kernelimage:
 endif

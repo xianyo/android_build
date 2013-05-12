@@ -781,6 +781,12 @@ ifeq ($(BUILD_TINY_ANDROID), true)
 INSTALLED_RECOVERYIMAGE_TARGET :=
 endif
 
+ifeq ($(TARGET_USERIMAGES_USE_UBIFS),true)
+UBISTUFF := ubiimagesgenerate
+else
+UBISTUFF :=
+endif
+
 # Build files and then package it into the rom formats
 .PHONY: droidcore
 droidcore: kernelimage \
@@ -793,8 +799,7 @@ droidcore: kernelimage \
 	$(INSTALLED_USERDATAIMAGE_TARGET) \
 	$(INSTALLED_CACHEIMAGE_TARGET) \
 	$(INSTALLED_FILES_FILE) \
-	ubiimagesgenerate
-
+	$(UBISTUFF)
 
 # dist_files only for putting your library into the dist directory with a full build.
 .PHONY: dist_files

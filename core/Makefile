@@ -790,7 +790,7 @@ $(TARGET_KERNEL_CONFIGURE): kernel_imx/arch/arm/configs/$(TARGET_KERNEL_DEFCONF)
 	install -D $(KERNEL_CONFIGURE) $(TARGET_KERNEL_CONFIGURE)
 
 $(TARGET_PREBUILT_KERNEL): $(TARGET_KERNEL_CONFIGURE) $(TOPDIR)bootable/bootloader/uboot-imx/tools/mkimage
-	$(MAKE) PATH=${PATH}:$(abspath bootable/bootloader/uboot-imx/tools) -C kernel_imx -j$(HOST_PROCESSOR) uImage $(KERNEL_ENV)
+	PATH=$(PATH) $(TOPDIR)bootable/bootloader/uboot-imx/tools/ $(MAKE) -C kernel_imx -j$(HOST_PROCESSOR) uImage $(KERNEL_ENV)
 	install -D $(KERNEL_UIMAGE)  $(PRODUCT_OUT)/uImage
 	install -D $(KERNEL_ZIMAGE)  $(PRODUCT_OUT)/kernel
 

@@ -742,7 +742,7 @@ ifneq ($(strip $(TARGET_BOOTLOADER_CONFIG)),)
 BOOTLOADER_CROSS_TOOLCHAIN := `pwd`/prebuilts/gcc/linux-x86/arm/arm-eabi-4.6/bin/arm-eabi-
 BOOTLOADER_ENV := ARCH=arm CROSS_COMPILE=$(BOOTLOADER_CROSS_TOOLCHAIN)
 HOST_PROCESSOR := $(shell cat /proc/cpuinfo | grep processor | wc -l)
-TARGET_BOOTLOADER_IMAGE := $(PRODUCT_OUT)/System.map
+TARGET_BOOTLOADER_IMAGE := $(PRODUCT_OUT)/u-boot.imx
 
 BOOTLOADER_PATH := bootable/bootloader/uboot-imx/
 BOOTLOADER_CONFIG_FILE := $(BOOTLOADER_PATH)/include/config.h
@@ -780,17 +780,14 @@ KERNEL_OUT := $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ
 .PHONY: $(TARGET_PREBUILT_KERNEL)
 kernelimage: $(TARGET_PREBUILT_KERNEL)
 
-$(TOPDIR)bootable/bootloader/uboot-imx/tools/mkimage:
-	make -C $(TOPDIR)bootable/bootloader/uboot-imx/ tools
-
 $(KERNEL_CONFIGURE): kernel_imx/arch/arm/configs/$(TARGET_KERNEL_DEFCONF)
 
 $(TARGET_KERNEL_CONFIGURE): kernel_imx/arch/arm/configs/$(TARGET_KERNEL_DEFCONF) $(KERNEL_CONFIGURE)
 	$(MAKE) -C kernel_imx $(TARGET_KERNEL_DEFCONF) $(KERNEL_ENV)
 	install -D $(KERNEL_CONFIGURE) $(TARGET_KERNEL_CONFIGURE)
 
-$(TARGET_PREBUILT_KERNEL): $(TARGET_KERNEL_CONFIGURE) $(TOPDIR)bootable/bootloader/uboot-imx/tools/mkimage
-	PATH=$(PATH) $(TOPDIR)bootable/bootloader/uboot-imx/tools/ $(MAKE) -C kernel_imx -j$(HOST_PROCESSOR) uImage $(KERNEL_ENV)
+$(TARGET_PREBUILT_KERNEL): $(TARGET_KERNEL_CONFIGURE)
+	$(MAKE) -C kernel_imx -j$(HOST_PROCESSOR) uImage $(KERNEL_ENV)
 	install -D $(KERNEL_UIMAGE)  $(PRODUCT_OUT)/uImage
 	install -D $(KERNEL_ZIMAGE)  $(PRODUCT_OUT)/kernel
 

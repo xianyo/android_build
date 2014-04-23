@@ -753,11 +753,11 @@ $(TARGET_BOOTLOADER_IMAGE):
 	@for ubootplat in $(TARGET_BOOTLOADER_CONFIG); do \
 		UBOOT_PLATFORM=`echo $$ubootplat | cut -d':' -f1`; \
 		UBOOT_CONFIG=`echo $$ubootplat | cut -d':' -f2`; \
-		IMGNAME=`echo $$UBOOT_CONFIG | sed 's/_config//'`; \
 		$(MAKE) -C bootable/bootloader/uboot-imx/ distclean $(BOOTLOADER_ENV); \
 		$(MAKE) -C bootable/bootloader/uboot-imx/ $$UBOOT_CONFIG $(BOOTLOADER_ENV); \
 		$(MAKE) -C bootable/bootloader/uboot-imx/ $(BOOTLOADER_ENV); \
-		install -D bootable/bootloader/uboot-imx/u-boot.imx $(PRODUCT_OUT)/boot/u-boot.$$IMGNAME ; \
+		install -D bootable/bootloader/uboot-imx/u-boot.imx $(PRODUCT_OUT)/u-boot.$$UBOOT_CONFIG; \
+		install -D bootable/bootloader/uboot-imx/u-boot.imx $@; \
 	done
 else
 bootloader:
